@@ -29,7 +29,9 @@ if (mysqli_connect_errno()) {
 					echo "Userdata Inserted Success<br>";
 					if (mysqli_query($conn, "INSERT INTO `session` VALUES (NULL, '')")) { //Insert Data
 						echo "Session Data Inserted Success<br>";
-						if (fopen("install.lock", "w")) {
+						$lock_file = fopen("install.lock", "w");
+						fclose($lock_file);
+						if (file_exists("install.lock")) {
 							echo "Install Success";
 						} else {
 							echo "Please check if you have permission to create files.<br>Install Error";
