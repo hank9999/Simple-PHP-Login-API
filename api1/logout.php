@@ -18,8 +18,8 @@ if(!isset($_SESSION['user_id'])) {
 } else {
     $_SESSION = array();
     if(isset($_COOKIE[session_name()])){
-        setcookie(session_name(),'',time()-3600);
+        setcookie(session_name(),'',time()-3600);  //Clean Cookies
     }
-    session_destroy();
+    session_destroy();  //Clean Session
     echo '{"app":{"message":"Logout"}}';
 }

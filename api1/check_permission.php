@@ -16,16 +16,16 @@ require_once('../config.php');
 session_start();
 
 if(!isset($_SESSION['user_id'])) {
-    echo '{"app":{"message":"You have not log yet."}}';
+    echo '{"app":{"message":"You have not log yet."}}';  //Check Login. If no Session ID, not login in
 } else {
     $conn = mysqli_connect($config['servername'], $config['username'], $config['password'], $config['dbname']); //Create Connect
     if (mysqli_connect_errno()) {
-        echo "MySQL Error: " . mysqli_connect_error() . "<br>"; //Print Error
+        echo "MySQL Error: " . mysqli_connect_error() . "<br>";  //Print Error
     } else {
         $user_id = $_SESSION['user_id'];
-        $query = "SELECT `permission` FROM `user` WHERE `user_id` = $user_id";
+        $query = "SELECT `permission` FROM `user` WHERE `user_id` = $user_id";  //Find User in MySQL
         $data = mysqli_query($conn,$query);
-        if (mysqli_num_rows($data)==1) {
+        if (mysqli_num_rows($data)==1) {  //You can change permissions' name
             $row = mysqli_fetch_array($data);
             if ($row['permission'] == 0) {
                 echo '{"app":{"message":"Admin"}}';

@@ -24,9 +24,9 @@ function register($user_name, $pass_word, $config) {
     } else if ($pass_word == "") {
         echo '{"app":{"message":"Password Empty"}}';
     } else {
-        $conn = mysqli_connect($config['servername'], $config['username'], $config['password'], $config['dbname']); //Create Connect
+        $conn = mysqli_connect($config['servername'], $config['username'], $config['password'], $config['dbname']);  //Create Connect
         if (mysqli_connect_errno()) {
-            echo "MySQL Error: " . mysqli_connect_error() . "<br>"; //Print Error
+            echo "MySQL Error: " . mysqli_connect_error() . "<br>";  //Print Error
         } else {
             $query = "SELECT `username` FROM `user` WHERE `username` = '$user_name'";
             $data = mysqli_query($conn,$query);
@@ -47,26 +47,26 @@ function register($user_name, $pass_word, $config) {
     }
 }
 
-if(!isset($_SESSION['user_id'])) {
+if(!isset($_SESSION['user_id'])) {  //No Session ID, then register it
     register($user_name, $pass_word, $config);
 } else {
     $conn = mysqli_connect($config['servername'], $config['username'], $config['password'], $config['dbname']);
     if (mysqli_connect_errno()) {
-        echo "MySQL Error: " . mysqli_connect_error() . "<br>"; //Print Error
+        echo "MySQL Error: " . mysqli_connect_error() . "<br>";  //Print Error
     } else {
         $user_id = $_SESSION["user_id"];
         $query = "SELECT `session_id` FROM `session` WHERE `user_id` = '$user_id'";
         $data = mysqli_query($conn,$query);
         if (mysqli_num_rows($data)==1) {
             $row = mysqli_fetch_array($data);
-            if ($row["session_id"] == $now_session_id) {
+            if ($row["session_id"] == $now_session_id) {  //Already Logged in
                 echo '{"app":{"message":"You have already registered."}}';
-            } else {
+            } else {  //If not,that account is logged in elsewhere.
                 $_SESSION = array();
                 if(isset($_COOKIE[session_name()])){
-                    setcookie(session_name(),'',time()-3600);
+                    setcookie(session_name(),'',time()-3600);  //Clean Cookies
                 }
-                session_destroy();
+                session_destroy();  //Clean Session
                 register($user_name, $pass_word, $config);
             }
         } else {

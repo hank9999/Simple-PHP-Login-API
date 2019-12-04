@@ -27,11 +27,11 @@ function login($user_name, $pass_word, $config, $now_session_id) {
     } else {
         $conn = mysqli_connect($config['servername'], $config['username'], $config['password'], $config['dbname']); //Create Connect
         if (mysqli_connect_errno()) {
-            echo "MySQL Error: " . mysqli_connect_error() . "<br>"; //Print Error
+            echo "MySQL Error: " . mysqli_connect_error() . "<br>";  //Print Error
         } else {
-            $query = "SELECT `user_id`, `username`, `permission` FROM `user` WHERE `username` = '$user_name' AND `password` = '$pass_word'";
+            $query = "SELECT `user_id`, `username`, `permission` FROM `user` WHERE `username` = '$user_name' AND `password` = '$pass_word'";  //Check Username and Password
             $data = mysqli_query($conn,$query);
-            if (mysqli_num_rows($data)==1) {
+            if (mysqli_num_rows($data)==1) {  //Right
                 $row = mysqli_fetch_array($data);
                 $user_id = $row['user_id'];
                 $query2 = "UPDATE `session` SET `session_id` = '$now_session_id' WHERE `user_id` = '$user_id'";
@@ -47,28 +47,28 @@ function login($user_name, $pass_word, $config, $now_session_id) {
                     }
                     echo '{"app":{"message":"Login Success"}}';
                 } else {
-                    echo '{"app":{"message":"Unknown Error"}}';
+                    echo '{"app":{"message":"Unknown Error"}}';  //Other Error
                 }
             } else {
-                echo '{"app":{"message":"Username or Password Wrong"}}';
+                echo '{"app":{"message":"Username or Password Wrong"}}';  //Error
             }
         }
     }
 }
 
 if (!isset($_SESSION['user_id'])) {
-    login($user_name, $pass_word, $config, $now_session_id);
+    login($user_name, $pass_word, $config, $now_session_id);  //Check Login. If no Session ID, not login in
 } else {
     $conn = mysqli_connect($config['servername'], $config['username'], $config['password'], $config['dbname']); //Create Connect
     if (mysqli_connect_errno()) {
-        echo "MySQL Error: " . mysqli_connect_error() . "<br>"; //Print Error
+        echo "MySQL Error: " . mysqli_connect_error() . "<br>";  //Print Error
     } else {
         $user_id = $_SESSION["user_id"];
         $query = "SELECT `session_id` FROM `session` WHERE `user_id` = '$user_id'";
         $data = mysqli_query($conn,$query);
         if (mysqli_num_rows($data)==1) {
             $row = mysqli_fetch_array($data);
-            if ($row["session_id"] == $now_session_id) {
+            if ($row["session_id"] == $now_session_id) {  //Check Session ID, If Session ID that saved before = Present Session ID, user had already logged in
                 echo '{"app":{"message":"You have already logged in. Do not log again"}}';
             } else {
                 login($user_name, $pass_word, $config, $now_session_id);
