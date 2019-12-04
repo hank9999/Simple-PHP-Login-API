@@ -17,9 +17,8 @@ $conn = mysqli_connect($config['servername'], $config['username'], $config['pass
 if (mysqli_connect_errno()) {
 	echo "MySQL Error: " . mysqli_connect_error() . "<br>"; //Print Error
 } else {
-	$result = $conn->query("SELECT * FROM user");
-	if (mysqli_affected_rows($conn) > 0) {
-		echo "Don't Install Again!";
+	if (file_exists("install.lock")) {
+		echo "Don't Install Again!<br>If you want to reinstall, please delete install.lock and MySQL Table";
 	} else {
 		echo "Installing...<br>";
 		if (mysqli_query($conn, "CREATE TABLE `user` (`user_id` int not null primary key auto_increment, `permission` int, `username` varchar(255), `password` varchar(255))")) { //Create Table
@@ -30,7 +29,11 @@ if (mysqli_connect_errno()) {
 					echo "Userdata Inserted Success<br>";
 					if (mysqli_query($conn, "INSERT INTO `session` VALUES (NULL, '')")) { //Insert Data
 						echo "Session Data Inserted Success<br>";
-						echo "Install Success<br>";
+						if (fopen("install.lock", "w")) {
+							echo "Install Success";
+						} else {
+							echo "Please check if you have permission to create files.<br>Install Error";
+						}
 					} else {
 						echo "Session Data Inserted Error: " . mysqli_error($conn) . "<br>";
 					}
