@@ -11,6 +11,8 @@ PURPOSE.
 See the Mulan PSL v1 for more details.
 */
 
+header('Content-Type:application/json; charset=utf-8'); 
+
 require_once('../config.php');
 
 $user_name = $_GET["username"];
@@ -20,39 +22,43 @@ session_start();
 
 function register($user_name, $pass_word, $config) {
     if ($user_name == "") {
-        echo '{"app":{"message":"Username Empty"}}';
-    } else if ($pass_word == "") {
-        echo '{"app":{"message":"Password Empty"}}';
+        $message = array('status' => 'Fail','message' => 'Username Empty');
+        die(json_encode($message,JSON_UNESCAPED_UNICODE));
+    }
+    if ($pass_word == "") {
+        $message = array('status' => 'Fail','message' => 'Password Empty');
+        die(json_encode($message,JSON_UNESCAPED_UNICODE));
+    }
+    $conn = mysqli_connect($config['servername'], $config['username'], $config['password'], $config['dbname']); //Create Connect
+    if (mysqli_connect_errno()) {
+        $message = array('status' => 'Fail','message' => 'MySQL Error: ' . mysqli_connect_error() . '<br>');
+        die(json_encode($message,JSON_UNESCAPED_UNICODE));  //Print Error
     } else {
-        $conn = mysqli_connect($config['servername'], $config['username'], $config['password'], $config['dbname']);  //Create Connect
-        if (mysqli_connect_errno()) {
-            echo "MySQL Error: " . mysqli_connect_error() . "<br>";  //Print Error
+        $query = "SELECT `username` FROM `user` WHERE `username` = '$user_name'";
+        $data = mysqli_query($conn,$query);
+        if (mysqli_num_rows($data)>=1) {
+            die(json_encode(array('status' => 'Fail', 'message' => 'Username is Unavailable'),JSON_UNESCAPED_UNICODE));
         } else {
-            $query = "SELECT `username` FROM `user` WHERE `username` = '$user_name'";
-            $data = mysqli_query($conn,$query);
-            if (mysqli_num_rows($data)>=1) {
-                echo '{"app":{"message":"Username is Unavailable"}}';
-            } else {
-                if (mysqli_query($conn, "INSERT INTO user VALUES (NULL,1 , '$user_name', '$pass_word')")) {
-                    if (mysqli_query($conn, "INSERT INTO `session` VALUES (NULL, '')")) {
-                        echo '{"app":{"message":"Register Success"}}';
-                    } else {
-                        echo '{"app":{"message":"Register Failed"}}';
-                    }
+            if (mysqli_query($conn, "INSERT INTO user VALUES (NULL,1 , '$user_name', '$pass_word')")) {
+                if (mysqli_query($conn, "INSERT INTO `session` VALUES (NULL, '')")) {
+                    exit(json_encode(array('status' => 'Success', 'message' => 'Register Success'),JSON_UNESCAPED_UNICODE));
                 } else {
-                    echo '{"app":{"message":"Register Failed"}}';
+                    die(json_encode(array('status' => 'Fail', 'message' => 'Register Failed'),JSON_UNESCAPED_UNICODE));
                 }
+            } else {
+                die(json_encode(array('status' => 'Fail', 'message' => 'Register Failed'),JSON_UNESCAPED_UNICODE));
             }
         }
+        mysqli_close($conn);
     }
 }
-
 if(!isset($_SESSION['user_id'])) {  //No Session ID, then register it
     register($user_name, $pass_word, $config);
 } else {
     $conn = mysqli_connect($config['servername'], $config['username'], $config['password'], $config['dbname']);
     if (mysqli_connect_errno()) {
-        echo "MySQL Error: " . mysqli_connect_error() . "<br>";  //Print Error
+        $message = array('status' => 'Fail','message' => 'MySQL Error: ' . mysqli_connect_error() . '<br>');
+        die(json_encode($message,JSON_UNESCAPED_UNICODE));  //Print Error
     } else {
         $user_id = $_SESSION["user_id"];
         $query = "SELECT `session_id` FROM `session` WHERE `user_id` = '$user_id'";
@@ -60,7 +66,7 @@ if(!isset($_SESSION['user_id'])) {  //No Session ID, then register it
         if (mysqli_num_rows($data)==1) {
             $row = mysqli_fetch_array($data);
             if ($row["session_id"] == $now_session_id) {  //Already Logged in
-                echo '{"app":{"message":"You have already registered."}}';
+                die(json_encode(array('status' => 'Fail', 'message' => 'You have already registered.'),JSON_UNESCAPED_UNICODE));
             } else {  //If not,that account is logged in elsewhere.
                 $_SESSION = array();
                 if(isset($_COOKIE[session_name()])){
@@ -70,7 +76,8 @@ if(!isset($_SESSION['user_id'])) {  //No Session ID, then register it
                 register($user_name, $pass_word, $config);
             }
         } else {
-            echo '{"app":{"message":"Unknown Error"}}';
+            die(json_encode(array('status' => 'Fail', 'message' => 'Unknown Error'),JSON_UNESCAPED_UNICODE));
         }
+        mysqli_close($conn);
     }
 }
